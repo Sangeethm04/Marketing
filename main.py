@@ -19,6 +19,7 @@ def get_response(message):
             {"role": "user", "content": "find the most relevant owner/ceo of the company. Make sure it is from the given company exactly not a similar named company-just give the name no other information. If it doesn't explicitly say owner or ceo currently then just return with n/a: " + ' '.join(message)},
         ]
     )
+    print(response)
     print(response.choices[0].message['content'])
 
 #only pull the first few results from google
@@ -34,15 +35,20 @@ def pull_google_search(company):
 
     #find tags with the xpath
     #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
-    allLines = []
+    divLines = []
+    h3lines = []
     neededLines = []
     #find all divs
     for line in soup.find_all('div'):
-        allLines.append(line.get_text())
+        divLines.append(line.get_text())
+    
+    for line in soup.find_all('h3'):
+        neededLines.append(line.get_text())
 
     #get the first 5...50 lines
     for line in range(0, 50):
-        neededLines.append(allLines[line])
+        neededLines.append(divLines[line])
+    
     return neededLines
     
 
@@ -56,10 +62,13 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-    for company in companies[5:9]:
-        company_name = company
+   # for company in companies[5:9]:
+    company_name = "Oak Ridge Custom Builders"
 
-        messages = pull_google_search(company_name)
-        #print(messages)
-        get_response(messages)
+    messages = pull_google_search(company_name)
+    #print(messages)
+    get_response(messages)
+
+
+        
 
