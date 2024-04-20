@@ -8,15 +8,17 @@ import pandas as pd
 #wait for the page to load
 from selenium.webdriver.support.ui import WebDriverWait
 
-API_KEY = "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"
+#pull api from file API_KEY
+API_KEY = open("API_KEY").read().strip()
 
 def get_response(message, company_name):
     openai.api_key = API_KEY
-
+    print(message)
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "user", "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company exactly not a similar named company-just give the name no other information and prioritize better business bureau results. If it doesn't explicitly say owner or ceo currently then just return with n/a: " + ' '.join(message)},
+            {"role": "user", 
+             "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company exactly not a similar named company-just give the name no other information and prioritize better business bureau results. If it doesn't explicitly say owner or ceo currently then just return with n/a: " + ' '.join(message)},
         ]
     )
     print(response)
@@ -37,7 +39,6 @@ def pull_google_search(company):
     #find tags with the xpath
     #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
     divLines = []
-    h3lines = []
     neededLines = []
     #find all divs
     for line in soup.find_all('div'):
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-    for company in companies[500:505]:
+    for company in companies[501:502]:
         company_name = company
         print(company_name)
 
@@ -81,7 +82,7 @@ if __name__ == "__main__":
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
         df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("final3.csv")
+    df.to_csv("final4.csv")
 
 
         
