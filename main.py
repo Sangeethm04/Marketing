@@ -63,7 +63,7 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-    for company in companies[505:506]:
+    for company in companies[500:505]:
         company_name = company
         print(company_name)
 
@@ -71,13 +71,17 @@ if __name__ == "__main__":
 
         name = get_response(messages, company_name) 
 
+        if name == "n/a":
+            df.loc[df['name'] == company_name, 'first_name'] = "n/a"
+            df.loc[df['name'] == company_name, 'last_name'] = "n/a"
+            continue
         name_split = name.split(" ")
         print(name_split[0])
         print(name_split[1])
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
         df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("final.csv")
+    df.to_csv("final3.csv")
 
 
         
