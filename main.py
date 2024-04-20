@@ -10,17 +10,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 API_KEY = "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"
 
-def get_response(message):
+def get_response(message, company_name):
     openai.api_key = API_KEY
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "user", "content": "find the most relevant owner/ceo of the company. Make sure it is from the given company exactly not a similar named company-just give the name no other information. If it doesn't explicitly say owner or ceo currently then just return with n/a: " + ' '.join(message)},
+            {"role": "user", "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company exactly not a similar named company-just give the name no other information and prioritize better business bureau results. If it doesn't explicitly say owner or ceo currently then just return with n/a: " + ' '.join(message)},
         ]
     )
     print(response)
     print(response.choices[0].message['content'])
+    return response.choices[0].message['content']
 
 #only pull the first few results from google
 def pull_google_search(company):
@@ -62,12 +63,21 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-   # for company in companies[5:9]:
-    company_name = "Oak Ridge Custom Builders"
+    for company in companies[505:506]:
+        company_name = company
+        print(company_name)
 
-    messages = pull_google_search(company_name)
-    #print(messages)
-    get_response(messages)
+        messages = pull_google_search(company_name)
+
+        name = get_response(messages, company_name) 
+
+        name_split = name.split(" ")
+        print(name_split[0])
+        print(name_split[1])
+        df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
+        df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
+
+    df.to_csv("final.csv")
 
 
         
