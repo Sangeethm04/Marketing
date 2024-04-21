@@ -18,7 +18,7 @@ def get_response(message, company_name):
         model="gpt-3.5-turbo",
         messages=[
             {"role": "user", 
-             "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company exactly not a similar named company-just give the name no other information and prioritize better business bureau results. If it doesn't explicitly say owner or ceo currently then just return with n/a: " + ' '.join(message)},
+             "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company not a similar named company-just give the name no other information and prioritize better business bureau results. If it doesn't explicitly say owner or ceo then just return with n/a: " + ' '.join(message)},
         ]
     )
     print(response)
@@ -33,7 +33,6 @@ def pull_google_search(company):
     # driver = webdriver.Chrome(options=chrome_options)
 
     searchquery = company + " owner "
-    # driver.get("https://www.google.com/search?q=" + searchquery)
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
