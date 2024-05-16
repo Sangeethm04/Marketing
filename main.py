@@ -2,8 +2,6 @@ import openai
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from urllib.parse import quote_plus
-
 #wait for the page to load
 
 #pull api from file API_KEY
@@ -16,7 +14,7 @@ def get_response(message, address, company_name):
         model="gpt-3.5-turbo-0125",
         messages=[
             {"role": "user", 
-             "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company not a similar named company-the address of the company I'm looking for is-"+' '.join(address) +". Just give the first name and last name without middle or any prefixes and no other information and prioritize better business bureau/LinkedIn results." + ' '.join(message)},
+             "content": "find the most relevant owner/ceo/president of the company-"+ company_name +". Use this address for context when deciding if it is the right company-"+' '.join(address) +". Just give the first name and last name without middle or any prefixes and no other information." + ' '.join(message)},
         ]
     )
     print(response)
@@ -31,8 +29,9 @@ def pull_google_search(company, address):
 
     # driver = webdriver.Chrome(options=chrome_options)
 
-    searchquery = " ".join([company, str(address[0]), "owner"])  # Use the first item 
+    searchquery = company + " owner "
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
+
     #find tags with the xpath
     #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
     divLines = []
@@ -63,7 +62,7 @@ if __name__ == "__main__":
     #do the first 3
     for company in companies[0:25]:
         company_name = company
-        address = df.loc[df['name'] == company_name, 'address']
+        address = df.loc[df['name'] == company_name, 'address'].values
         print(address)
         print(company_name)
 
@@ -79,10 +78,9 @@ if __name__ == "__main__":
         #print(name_split[0])
         #print(name_split[1])
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
-        if name_split[1] != "":
-            df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
+        df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("final2.csv")
+    df.to_csv("final3.csv")
 
 
         
