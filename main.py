@@ -29,7 +29,7 @@ def pull_google_search(company):
 
     # driver = webdriver.Chrome(options=chrome_options)
 
-    searchquery = company + address + " owner "
+    searchquery = company + " owner "
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         print(address)
         print(company_name)
 
-        messages = pull_google_search(company_name, address)
+        messages = pull_google_search(company_name)
 
         name = get_response(messages, address, company_name) 
 
