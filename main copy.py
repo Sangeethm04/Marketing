@@ -3,25 +3,37 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 #wait for the page to load
+import ollama
 
 #pull api from file API_KEY
 API_KEY = open("API_KEY").read().strip()
 
-def get_response(message, address, company_name):
+def get_response(message, company_name):
     openai.api_key = API_KEY
-    print(message)
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0125",
-        messages=[
-            {"role": "user", 
-             "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company not a similar named company-the address of the company I'm looking for is-"+' '.join(address) +". Just give the first name and last name without middle or any prefixes and no other information and prioritize better business bureau/LinkedIn results." + ' '.join(message)},
-        ]
-    )
+    #print(message)
+    response = ollama.chat(model='llama3', messages=[
+   {"role": "user", 
+             "content": "find the most relevant owner/ceo of the company-"+ company_name +". Make sure it is from the given company not a similar named company. Prioritize better business bureau results. Return only the first name without any other text. If it doesn't explicitly say owner or ceo then just return with n/a: " + ' '.join(message)},
+    ])
     print(response)
-    print(response.choices[0].message['content'])
-    return response.choices[0].message['content']
+    # print(response)
+    # print(response.choices[0].message['content'])
+    return response['message']['content']
 
 
+def get_cleaned(message):
+    openai.api_key = API_KEY
+    #print(message)
+    response = ollama.chat(model='llama3', messages=[
+   {"role": "user", 
+             "content": "From this: return only the name" + ' '.join(message)},
+    ])
+    print(response)
+    # print(response)
+    # print(response.choices[0].message['content'])
+    return response['message']['content']
+
+ 
 #only pull the first few results from google
 def pull_google_search(company):
     # chrome_options = webdriver.ChromeOptions()
@@ -29,7 +41,7 @@ def pull_google_search(company):
 
     # driver = webdriver.Chrome(options=chrome_options)
 
-    searchquery = company + address + " owner "
+    searchquery = company + " owner "
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
@@ -60,27 +72,30 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-    for company in companies[0:25]:
+    for company in companies[200:225]:
         company_name = company
-        address = df.loc[df['name'] == company_name, 'address'].values
-        print(address)
         print(company_name)
 
-        messages = pull_google_search(company_name, address)
+        messages = pull_google_search(company_name)
 
-        name = get_response(messages, address, company_name) 
+        nameOG = get_response(messages, company_name) 
+
+        name = get_cleaned(nameOG)
 
         if name == "n/a":
             df.loc[df['name'] == company_name, 'first_name'] = "n/a"
             df.loc[df['name'] == company_name, 'last_name'] = "n/a"
             continue
         name_split = name.split(" ")
-        #print(name_split[0])
-        #print(name_split[1])
-        df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
-        df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
+        if name_split[0] != None:
+            print(name_split[0])
+            df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
+        if name_split[1] != None:    
+            print(name_split[1])
+            df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
+        
 
-    df.to_csv("final1.csv")
+    df.to_csv("final999.csv")
 
 
         
