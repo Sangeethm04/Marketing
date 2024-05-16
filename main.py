@@ -2,6 +2,8 @@ import openai
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
+from urllib.parse import quote_plus
+
 #wait for the page to load
 
 #pull api from file API_KEY
@@ -23,15 +25,14 @@ def get_response(message, address, company_name):
 
 
 #only pull the first few results from google
-def pull_google_search(company):
+def pull_google_search(company, address):
     # chrome_options = webdriver.ChromeOptions()
     # chrome_options.add_experimental_option("detach", True)
 
     # driver = webdriver.Chrome(options=chrome_options)
 
-    searchquery = company + " owner "
+    searchquery = " ".join([company, str(address[0]), "owner"])  # Use the first item 
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
-
     #find tags with the xpath
     #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
     divLines = []
@@ -62,11 +63,11 @@ if __name__ == "__main__":
     #do the first 3
     for company in companies[0:25]:
         company_name = company
-        address = df.loc[df['name'] == company_name, 'address'].values
+        address = df.loc[df['name'] == company_name, 'address']
         print(address)
         print(company_name)
 
-        messages = pull_google_search(company_name)
+        messages = pull_google_search(company_name, address)
 
         name = get_response(messages, address, company_name) 
 
@@ -78,9 +79,10 @@ if __name__ == "__main__":
         #print(name_split[0])
         #print(name_split[1])
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
-        df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
+        if name_split[1] != "":
+            df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("final1.csv")
+    df.to_csv("final2.csv")
 
 
         
