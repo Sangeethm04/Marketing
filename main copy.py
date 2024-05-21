@@ -22,7 +22,6 @@ def get_response(message, company_name):
 
 
 def get_cleaned(message):
-    openai.api_key = API_KEY
     #print(message)
     response = ollama.chat(model='llama3', messages=[
    {"role": "user", 
@@ -72,7 +71,7 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-    for company in companies[200:225]:
+    for company in companies[0:25]:
         company_name = company
         print(company_name)
 

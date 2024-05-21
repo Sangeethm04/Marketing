@@ -2,6 +2,8 @@ import openai
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
+from urllib.parse import quote_plus
+
 #wait for the page to load
 
 #pull api from file API_KEY
@@ -14,7 +16,7 @@ def get_response(message, address, company_name):
         model="gpt-3.5-turbo-0125",
         messages=[
             {"role": "user", 
-             "content": "find the most relevant owner/ceo/president of the company-"+ company_name +". Use this address for context when deciding if it is the right company-"+' '.join(address) +". Just give the first name and last name without middle or any prefixes and no other information." + ' '.join(message)},
+             "content": "Find the most relevant owner/ceo of the company-"+ company_name +". Prioritize results that are from Better Business Bureau and Linkedin results. ONLY return the first name & last name without middle or any prefixes and do not make up a name not given. If there is no owner/ceo then just return n/a" + ' '.join(message)},
         ]
     )
     print(response)
@@ -29,24 +31,32 @@ def pull_google_search(company, address):
 
     # driver = webdriver.Chrome(options=chrome_options)
 
-    searchquery = company + " owner "
+    searchquery = quote_plus(f"{company} owner")
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
     #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
     divLines = []
+    h3Lines = []
     neededLines = []
+
     #find all divs
     for line in soup.find_all('div'):
-        divLines.append(line.get_text())
-    
-    for line in soup.find_all('h3'):
-        neededLines.append(line.get_text())
+        #grab only unique divs
+        if line.get_text() not in divLines:
+            divLines.append(line.get_text())
 
-    #get the first 5...50 lines
-    for line in range(0, 50):
-        neededLines.append(divLines[line])
-    
+    for line in soup.find_all('h3'):
+        h3Lines.append(line.get_text())
+
+    #print first 50 of each list with the index number
+    for i in range(100):
+        if i < len(h3Lines):
+            neededLines.append(h3Lines[i])
+        if i < len(divLines):
+            neededLines.append(divLines[i])
+
+
     return neededLines
     
 
@@ -67,7 +77,7 @@ if __name__ == "__main__":
         print(company_name)
 
         messages = pull_google_search(company_name, address)
-
+        print(messages)
         name = get_response(messages, address, company_name) 
 
         if name == "n/a":
@@ -80,7 +90,7 @@ if __name__ == "__main__":
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
         df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("final3.csv")
+    df.to_csv("final9.csv")
 
 
         
