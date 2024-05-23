@@ -35,7 +35,6 @@ def pull_google_search(company, address):
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
-    #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
     divLines = []
     h3Lines = []
     neededLines = []
