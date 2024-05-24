@@ -7,13 +7,12 @@ from urllib.parse import quote_plus
 #wait for the page to load
 
 #pull api from file API_KEY
-API_KEY = open("API_KEY").read().strip()
+API_KEY = open("API_KEY.txt").read().strip()
 
 def get_response(message, address, company_name):
     openai.api_key = API_KEY
-    print(message)
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "user", 
              "content": "Find the most relevant owner/ceo of the company-"+ company_name +". Prioritize results that are from Better Business Bureau and Linkedin results. ONLY return the first name & last name without middle or any prefixes and do not make up a name not given. If there is no owner/ceo then just return n/a" + ' '.join(message)},
@@ -32,6 +31,7 @@ def pull_google_search(company, address):
     # driver = webdriver.Chrome(options=chrome_options)
 
     searchquery = quote_plus(f"{company} owner")
+    print("https://www.google.com/search?q=" + searchquery)
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
@@ -46,14 +46,15 @@ def pull_google_search(company, address):
             divLines.append(line.get_text())
 
     for line in soup.find_all('h3'):
-        h3Lines.append(line.get_text())
+        if line.get_text() not in h3Lines:
+            h3Lines.append(line.get_text())
 
     #print first 50 of each list with the index number
     for i in range(100):
         if i < len(h3Lines):
-            neededLines.append(h3Lines[i])
-        if i < len(divLines):
-            neededLines.append(divLines[i])
+            neededLines.append(f"h3: #{i} {h3Lines[i]}")
+        if i < len(divLines) and i > 15 and i < len(divLines) - 6:
+            neededLines.append(f"div: #{i} {divLines[i]}")
 
 
     return neededLines
@@ -89,7 +90,7 @@ if __name__ == "__main__":
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
         df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("final9.csv")
+    df.to_csv("OutputLeads.csv")
 
 
         
