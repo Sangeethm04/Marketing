@@ -3,11 +3,12 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 from urllib.parse import quote_plus
+import os
 
 #wait for the page to load
 
 #pull api from file API_KEY
-API_KEY = open("API_KEY.txt").read().strip()
+API_KEY = os.environ.get("OPENAI_API_KEY")
 
 def get_response(message, address, company_name):
     openai.api_key = API_KEY
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     #do this for each unique company in the companies column
     companies = df['name'].unique()
     #do the first 3
-    for company in companies[0:25]:
+    for company in companies[0:5]:
         company_name = company
         address = df.loc[df['name'] == company_name, 'address'].values
         print(address)
@@ -88,9 +89,10 @@ if __name__ == "__main__":
         #print(name_split[0])
         #print(name_split[1])
         df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
-        df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
+        if len(name_split) > 1:
+            df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
-    df.to_csv("OutputLeads.csv")
+    df.to_csv("OutputLeadsnew5.csv")
 
 
         

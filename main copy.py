@@ -4,12 +4,10 @@ import requests
 import pandas as pd
 #wait for the page to load
 import ollama
+from urllib.parse import quote_plus
 
-#pull api from file API_KEY
-API_KEY = open("API_KEY").read().strip()
 
 def get_response(message, company_name):
-    openai.api_key = API_KEY
     #print(message)
     response = ollama.chat(model='llama3', messages=[
    {"role": "user", 
@@ -39,27 +37,36 @@ def pull_google_search(company):
     # chrome_options.add_experimental_option("detach", True)
 
     # driver = webdriver.Chrome(options=chrome_options)
+    # driver = webdriver.Chrome(options=chrome_options)
 
-    searchquery = company + " owner "
+    searchquery = quote_plus(f"{company} owner")
+    print("https://www.google.com/search?q=" + searchquery)
     soup = BeautifulSoup(requests.get("https://www.google.com/search?q=" + searchquery).text, "html.parser")
 
     #find tags with the xpath
-    #mydivs = soup.find_all("div", xpath='//*[@id="rso"]/div[3]/div/div/div[2]/div/span/text()')
     divLines = []
+    h3Lines = []
     neededLines = []
+
     #find all divs
     for line in soup.find_all('div'):
-        divLines.append(line.get_text())
-    
-    for line in soup.find_all('h3'):
-        neededLines.append(line.get_text())
+        #grab only unique divs
+        if line.get_text() not in divLines:
+            divLines.append(line.get_text())
 
-    #get the first 5...50 lines
-    for line in range(0, 50):
-        neededLines.append(divLines[line])
-    
+    for line in soup.find_all('h3'):
+        if line.get_text() not in h3Lines:
+            h3Lines.append(line.get_text())
+
+    #print first 50 of each list with the index number
+    for i in range(100):
+        if i < len(h3Lines):
+            neededLines.append(f"h3: #{i} {h3Lines[i]}")
+        if i < len(divLines) and i > 15 and i < len(divLines) - 6:
+            neededLines.append(f"div: #{i} {divLines[i]}")
+
+
     return neededLines
-    
 
 
 #main method
