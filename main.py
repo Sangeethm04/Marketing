@@ -8,7 +8,8 @@ import os
 #wait for the page to load
 
 #pull api from file API_KEY
-API_KEY = os.environ.get("OPENAI_API_KEY")
+#API_KEY = os.environ.get("OPENAI_API_KEY")
+API_KEY = open("API_KEY.txt", "r").readline().strip()
 
 def get_response(message, address, company_name):
     openai.api_key = API_KEY
@@ -88,7 +89,8 @@ if __name__ == "__main__":
         name_split = name.split(" ")
         #print(name_split[0])
         #print(name_split[1])
-        df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
+        if len(name_split) > 0:
+            df.loc[df['name'] == company_name, 'first_name'] = name_split[0]
         if len(name_split) > 1:
             df.loc[df['name'] == company_name, 'last_name'] = name_split[1]
 
